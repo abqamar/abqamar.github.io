@@ -645,12 +645,16 @@ ul { list-style: none; }
 .tl-desc { color: var(--muted); font-size: 0.95rem; }
 
 /* ---------- Projects ---------- */
+/* flex so a part-filled last row is centered */
 .projects {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  --cols: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 28px;
 }
 .project {
+  flex: 0 0 calc((100% - (var(--cols) - 1) * 28px) / var(--cols));
   border-radius: var(--radius);
   overflow: hidden;
   display: flex;
@@ -1045,7 +1049,7 @@ ul { list-style: none; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
-  .projects { grid-template-columns: repeat(2, 1fr); }
+  .projects { --cols: 2; }
   .tools-grid { grid-template-columns: repeat(2, 1fr); }
   .nav-cta { display: none; }
 }
@@ -1105,7 +1109,7 @@ ul { list-style: none; }
   .tool-tile small { display: none; }
   .tool-text code { white-space: normal; overflow-wrap: anywhere; }
   .footer-inner { justify-content: center; text-align: center; }
-  .projects { grid-template-columns: 1fr; }
+  .projects { --cols: 1; }
   .skills { grid-template-columns: 1fr; }
   .stats { gap: 10px; }
   .stat strong { font-size: 1.6rem; }

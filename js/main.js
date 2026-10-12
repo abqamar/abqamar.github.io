@@ -52,6 +52,13 @@ const EXPERIENCE = [
 
 const PROJECTS = [
   {
+    title: "Mamluk",
+    tag: "Flutter",
+    image: "assets/images/projects/mamluk.png",
+    desc: "Mamluk is an online grocery shopping app with free home delivery. Customers browse fresh produce, pantry staples and household items, order in a few taps, and track their delivery from checkout to doorstep.",
+    playStore: "https://play.google.com/store/apps/details?id=com.mamluk.app",
+  },
+  {
     title: "Volunteers.ae",
     tag: "Flutter",
     image: "assets/images/projects/volunteers.svg",

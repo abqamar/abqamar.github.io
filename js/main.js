@@ -98,6 +98,104 @@ const PROJECTS = [
   },
 ];
 
+const TOOLS_URL = "https://microtools.abqamar.dev/";
+
+// Mirrors the tools on microtools.abqamar.dev — add one entry here when a tool is added there.
+// Icons are the same Heroicons paths the tools site uses.
+const DEV_TOOLS = [
+  {
+    name: "JSON to Dart",
+    category: "flutter",
+    desc: "Null-safe Flutter models in plain, Equatable, json_serializable or freezed style.",
+    url: TOOLS_URL + "flutter/#json-to-dart",
+    icon: "M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9",
+  },
+  {
+    name: ".env to Dart",
+    category: "flutter",
+    desc: "Obfuscated config classes or a <code>--dart-define-from-file</code> setup.",
+    url: TOOLS_URL + "flutter/#env-to-dart",
+    icon: "M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z",
+  },
+  {
+    name: "Assets to Dart",
+    category: "flutter",
+    desc: "Drop your assets folder and get type-safe asset references.",
+    url: TOOLS_URL + "flutter/#assets-to-dart",
+    icon: "M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z",
+  },
+  {
+    name: "JSON Formatter",
+    category: "data",
+    desc: "Validate, pretty-print or minify JSON.",
+    url: TOOLS_URL + "#json",
+    icon: "M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5",
+  },
+  {
+    name: "Base64 Encode/Decode",
+    category: "data",
+    desc: "Full UTF-8 support, including URL-safe mode.",
+    url: TOOLS_URL + "#base64",
+    icon: "M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5",
+  },
+  {
+    name: "Base64 Image Viewer",
+    category: "data",
+    desc: "Preview Base64 or data URI images safely.",
+    url: TOOLS_URL + "#base64-image",
+    icon: "M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z",
+  },
+  {
+    name: "Epoch Converter",
+    category: "data",
+    desc: "Unix timestamps to readable dates and back.",
+    url: TOOLS_URL + "#epoch",
+    icon: "M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z",
+  },
+  {
+    name: "UUID Generator",
+    category: "data",
+    desc: "RFC 4122 v4 UUIDs, one or a thousand at a time.",
+    url: TOOLS_URL + "#uuid",
+    icon: "M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5",
+  },
+  {
+    name: "Password Generator",
+    category: "security",
+    desc: "Cryptographically secure passwords with a strength meter.",
+    url: TOOLS_URL + "#password",
+    icon: "M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z",
+  },
+  {
+    name: "RSA Keys (PEM)",
+    category: "security",
+    desc: "Generate key pairs; encrypt, decrypt, sign and verify.",
+    url: TOOLS_URL + "#rsa",
+    icon: "M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z",
+  },
+  {
+    name: "Case Converter",
+    category: "text",
+    desc: "UPPERCASE, lowercase, Title Case, camelCase and more.",
+    url: TOOLS_URL + "#case",
+    icon: "M3 19.5L7.5 6l4.5 13.5M4.5 15h6m4.5-2.25c0-1.243 1.007-2.25 2.25-2.25s2.25 1.007 2.25 2.25v6.75m0-3.75h-2.625a1.875 1.875 0 100 3.75H19.5",
+  },
+  {
+    name: "Whitespace Remover",
+    category: "text",
+    desc: "Strip spaces, tabs, line breaks and invisible characters.",
+    url: TOOLS_URL + "#whitespace",
+    icon: "M3.75 9h16.5m-16.5 6.75h16.5M8.25 4.5l-3 15m13.5-15l-3 15",
+  },
+  {
+    name: "Lorem Ipsum",
+    category: "text",
+    desc: "Placeholder text by paragraphs, sentences or words.",
+    url: TOOLS_URL + "#lorem",
+    icon: "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12",
+  },
+];
+
 const WEB3FORMS_KEY = "6e02536d-546e-4f55-b7f5-3f564f7971be";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -148,6 +246,40 @@ $("#projectsGrid").innerHTML = PROJECTS.map(
     </div>
   </article>`
 ).join("");
+
+const toolIcon = (d) =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+
+$("#toolsFeatured").innerHTML = DEV_TOOLS.filter((t) => t.category === "flutter").map(
+  (t, i) => `
+  <a class="tool-feature glass reveal" style="--d:${i * 0.1}s" href="${t.url}" target="_blank" rel="noopener">
+    <span class="tool-icon">${toolIcon(t.icon)}</span>
+    <span class="tool-text">
+      <strong>${t.name}</strong>
+      <small>${t.desc}</small>
+    </span>
+    <i class="fa-solid fa-arrow-up-right-from-square tool-go" aria-hidden="true"></i>
+  </a>`
+).join("");
+
+$("#toolsGrid").innerHTML = DEV_TOOLS.filter((t) => t.category !== "flutter").map(
+  (t, i) => `
+  <a class="tool-tile glass reveal" style="--d:${(i % 5) * 0.08}s" data-category="${t.category}" href="${t.url}" target="_blank" rel="noopener">
+    <span class="tool-icon">${toolIcon(t.icon)}</span>
+    <strong>${t.name}</strong>
+    <small>${t.desc}</small>
+  </a>`
+).join("");
+
+document.querySelectorAll(".tool-filter").forEach((btn) =>
+  btn.addEventListener("click", () => {
+    const cat = btn.dataset.filter;
+    document.querySelectorAll(".tool-filter").forEach((b) => b.setAttribute("aria-pressed", b === btn));
+    document.querySelectorAll(".tool-tile").forEach((tile) => {
+      tile.hidden = cat !== "all" && tile.dataset.category !== cat;
+    });
+  })
+);
 
 /* ---------- Typewriter ---------- */
 (function typewriter() {

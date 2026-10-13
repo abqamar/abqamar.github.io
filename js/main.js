@@ -213,7 +213,7 @@ const $ = (sel) => document.querySelector(sel);
 $("#skills").innerHTML = SKILLS.map(
   (s) => `
   <div class="skill">
-    <div class="skill-top"><span><i class="${s.icon}"></i>${s.name}</span><span>${s.level}%</span></div>
+    <div class="skill-top"><span><i aria-hidden="true" class="${s.icon}"></i>${s.name}</span><span>${s.level}%</span></div>
     <div class="bar"><div class="bar-fill" data-level="${s.level}"></div></div>
   </div>`
 ).join("");
@@ -223,17 +223,17 @@ $("#timeline").innerHTML = EXPERIENCE.map(
   <div class="tl-item reveal">
     <span class="tl-dot"></span>
     <div class="glass card tl-card">
-      <span class="tl-date"><i class="fa-regular fa-calendar"></i>${e.date}</span>
-      <h4 class="tl-role">${e.role}</h4>
+      <span class="tl-date"><i aria-hidden="true" class="fa-regular fa-calendar"></i>${e.date}</span>
+      <h3 class="tl-role">${e.role}</h3>
       <p class="tl-company">${e.company}${e.outsourced ? ` <em>· Outsourced: ${e.outsourced}</em>` : ""}</p>
-      <p class="tl-loc"><i class="fa-solid fa-location-dot"></i>${e.location}</p>
+      <p class="tl-loc"><i aria-hidden="true" class="fa-solid fa-location-dot"></i>${e.location}</p>
       <p class="tl-desc">${e.desc}</p>
     </div>
   </div>`
 ).join("");
 
 const link = (href, icon, label) =>
-  href ? `<a href="${href}" target="_blank" rel="noopener" aria-label="${label}" title="${label}"><i class="${icon}"></i></a>` : "";
+  href ? `<a href="${href}" target="_blank" rel="noopener" aria-label="${label}" title="${label}"><i aria-hidden="true" class="${icon}"></i></a>` : "";
 
 $("#projectsGrid").innerHTML = PROJECTS.map(
   (p, i) => `
@@ -285,6 +285,11 @@ document.querySelectorAll(".tool-filter").forEach((btn) =>
     document.querySelectorAll(".tool-tile").forEach((tile) => {
       tile.hidden = cat !== "all" && tile.dataset.category !== cat;
     });
+    const shown = [...document.querySelectorAll(".tool-tile:not([hidden])")];
+    if (window.Motion && !reduceMotion) {
+      Motion.animate(shown, { opacity: [0, 1], scale: [0.92, 1] }, { type: "spring", stiffness: 300, damping: 24, delay: Motion.stagger(0.04) })
+        .then(() => shown.forEach((t) => (t.style.transform = "")));
+    }
   })
 );
 
@@ -315,30 +320,101 @@ const countUp = (el) => {
   })(start);
 };
 
-const io = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      const el = entry.target;
-      el.classList.add("visible");
-      el.querySelectorAll(".bar-fill").forEach((b) => (b.style.width = b.dataset.level + "%"));
-      el.querySelectorAll("[data-count]").forEach(countUp);
-      io.unobserve(el);
-    });
-  },
-  { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
-);
-document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+// Motion (motion.dev) drives the animations; without it (CDN blocked or reduced
+// motion requested) the CSS transitions below take over, so content never stays hidden.
+const M = window.Motion;
+const useMotion = !!M && !reduceMotion;
+const EASE = [0.22, 1, 0.36, 1];
+const SPRING = { type: "spring", stiffness: 140, damping: 22, mass: 0.9 };
 
-// stagger hero entrance
-document.querySelectorAll(".hero .reveal").forEach((el, i) => el.style.setProperty("--d", `${i * 0.1}s`));
+function fillExtras(el) {
+  el.querySelectorAll(".bar-fill").forEach((b) => {
+    if (useMotion) M.animate(b, { width: ["0%", b.dataset.level + "%"] }, { duration: 1.4, ease: EASE });
+    else b.style.width = b.dataset.level + "%";
+  });
+  el.querySelectorAll("[data-count]").forEach((c) => {
+    if (useMotion) M.animate(0, +c.dataset.count, { duration: 1.6, ease: EASE, onUpdate: (v) => (c.textContent = Math.round(v)) });
+    else countUp(c);
+  });
+}
+
+if (useMotion) {
+  const { animate, inView, scroll, stagger } = M;
+  document.documentElement.classList.add("has-motion");
+
+  // hand control back to CSS (hover lifts etc.) once an entrance finishes
+  const settle = (els) => [].concat(els).forEach((el) => {
+    el.classList.add("revealed");
+    el.style.transform = "";
+    el.style.filter = "";
+  });
+
+  // Page load: hero copy rises line by line with a soft focus-pull
+  const heroCopy = [...document.querySelectorAll(".hero-text .reveal")];
+  animate(heroCopy, { opacity: [0, 1], y: [28, 0], filter: ["blur(6px)", "blur(0px)"] },
+    { ...SPRING, delay: stagger(0.08, { startDelay: 0.15 }) }).then(() => settle(heroCopy));
+  const heroVisual = $(".hero-visual");
+  animate(heroVisual, { opacity: [0, 1] }, { duration: 0.8, delay: 0.3 });
+  animate(".phone", { scale: [0.88, 1] }, { type: "spring", stiffness: 90, damping: 16, delay: 0.3 });
+  animate(".chip", { opacity: [0, 1], filter: ["blur(4px)", "blur(0px)"] }, { duration: 0.5, delay: stagger(0.12, { startDelay: 0.8 }) });
+
+  // Scroll-linked: gentle hero parallax as it leaves the viewport
+  const hero = $(".hero");
+  scroll(animate(heroVisual, { y: [0, 90] }, { ease: "linear" }), { target: hero, offset: ["start start", "end start"] });
+  scroll(animate(".hero-text", { y: [0, 40], opacity: [1, 0.25] }, { ease: "linear" }), { target: hero, offset: ["start start", "end start"] });
+
+  // Timeline line draws itself as you read down the experience
+  const timeline = $("#timeline");
+  const line = document.createElement("span");
+  line.className = "timeline-progress";
+  timeline.prepend(line);
+  scroll(animate(line, { scaleY: [0, 1] }, { ease: "linear" }), { target: timeline, offset: ["start 75%", "end 60%"] });
+
+  // Everything below the hero springs in as it enters; items in a row keep their stagger (--d)
+  document.querySelectorAll(".reveal").forEach((el) => {
+    if (el.closest(".hero")) return;
+    const delay = parseFloat(el.style.getPropertyValue("--d")) || 0;
+    const fromX = el.classList.contains("tl-item") ? (el.matches(":nth-child(even)") ? 48 : -48) : 0;
+    inView(el, () => {
+      animate(el, { opacity: [0, 1], x: [fromX, 0], y: [fromX ? 0 : 32, 0] }, { ...SPRING, delay }).then(() => settle(el));
+      fillExtras(el);
+    }, { margin: "0px 0px -60px 0px" });
+  });
+} else {
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("visible");
+        fillExtras(entry.target);
+        io.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+  );
+  document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+  // stagger hero entrance
+  document.querySelectorAll(".hero .reveal").forEach((el, i) => el.style.setProperty("--d", `${i * 0.1}s`));
+}
 
 /* ---------- Navigation ---------- */
 const navWrap = $(".nav-wrap");
 const navLinks = $("#navLinks");
 const menuToggle = $("#menuToggle");
 
-window.addEventListener("scroll", () => navWrap.classList.toggle("scrolled", window.scrollY > 20), { passive: true });
+const progress = $("#scrollProgress");
+let scrollTicking = false;
+window.addEventListener("scroll", () => {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  requestAnimationFrame(() => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    progress.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+    navWrap.classList.toggle("scrolled", scrollY > 20);
+    scrollTicking = false;
+  });
+}, { passive: true });
 
 menuToggle.addEventListener("click", () => {
   const open = navLinks.classList.toggle("open");
@@ -378,10 +454,30 @@ if (finePointer && !reduceMotion) {
       const r = card.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
-      card.style.transform = `perspective(900px) rotateX(${-y * max}deg) rotateY(${x * max}deg) translateY(-6px)`;
+      if (useMotion) {
+        M.animate(card, { rotateX: -y * max, rotateY: x * max, y: -6, transformPerspective: 900 }, { type: "spring", stiffness: 220, damping: 20 });
+      } else {
+        card.style.transform = `perspective(900px) rotateX(${-y * max}deg) rotateY(${x * max}deg) translateY(-6px)`;
+      }
     });
-    card.addEventListener("pointerleave", () => (card.style.transform = ""));
+    card.addEventListener("pointerleave", () => {
+      if (useMotion) M.animate(card, { rotateX: 0, rotateY: 0, y: 0 }, { type: "spring", stiffness: 160, damping: 18 });
+      else card.style.transform = "";
+    });
   });
+
+  // magnetic primary buttons: lean toward the cursor, spring back on leave
+  if (useMotion) {
+    document.querySelectorAll(".btn-primary").forEach((btn) => {
+      btn.addEventListener("pointermove", (e) => {
+        const r = btn.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        M.animate(btn, { x: dx * 0.18, y: dy * 0.3 }, { type: "spring", stiffness: 260, damping: 18 });
+      });
+      btn.addEventListener("pointerleave", () => M.animate(btn, { x: 0, y: 0 }, { type: "spring", stiffness: 200, damping: 14 }));
+    });
+  }
 }
 
 /* ---------- Particle network background ---------- */
@@ -398,12 +494,12 @@ if (finePointer && !reduceMotion) {
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.min(70, Math.floor((w * h) / 22000));
+    const count = Math.min(45, Math.floor((w * h) / 30000));
     dots = Array.from({ length: count }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
+      vx: (Math.random() - 0.5) * 0.18,
+      vy: (Math.random() - 0.5) * 0.18,
       r: Math.random() * 1.6 + 0.4,
     }));
   };
@@ -417,13 +513,13 @@ if (finePointer && !reduceMotion) {
       if (a.y < 0 || a.y > h) a.vy *= -1;
       ctx.beginPath();
       ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(180, 200, 255, 0.55)";
+      ctx.fillStyle = "rgba(180, 200, 255, 0.4)";
       ctx.fill();
       for (let j = i + 1; j < dots.length; j++) {
         const b = dots[j];
         const d = Math.hypot(a.x - b.x, a.y - b.y);
         if (d < 130) {
-          ctx.strokeStyle = `rgba(124, 92, 255, ${0.18 * (1 - d / 130)})`;
+          ctx.strokeStyle = `rgba(124, 92, 255, ${0.12 * (1 - d / 130)})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
@@ -453,6 +549,15 @@ function showToast(msg, type = "") {
 /* ---------- Contact form (Web3Forms) ---------- */
 const form = $("#contactForm");
 const submitBtn = $("#submitBtn");
+const formError = $("#formError");
+const fields = ["#name", "#email", "#message"].map($);
+
+fields.forEach((f) =>
+  f.addEventListener("input", () => {
+    f.removeAttribute("aria-invalid");
+    if (fields.every((x) => x.value.trim())) formError.hidden = true;
+  })
+);
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -461,9 +566,13 @@ form.addEventListener("submit", async (e) => {
   const message = $("#message").value.trim();
 
   if (!name || !email || !message) {
+    fields.forEach((f) => (f.value.trim() ? f.removeAttribute("aria-invalid") : f.setAttribute("aria-invalid", "true")));
+    formError.hidden = false;
+    fields.find((f) => !f.value.trim()).focus();
     showToast("Please fill in all fields", "error");
     return;
   }
+  formError.hidden = true;
 
   submitBtn.disabled = true;
   submitBtn.classList.add("loading");

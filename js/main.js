@@ -349,9 +349,9 @@ if (useMotion) {
     el.style.filter = "";
   });
 
-  // Page load: hero copy rises line by line with a soft focus-pull
+  // Page load: hero copy rises line by line
   const heroCopy = [...document.querySelectorAll(".hero-text .reveal")];
-  animate(heroCopy, { opacity: [0, 1], y: [28, 0], filter: ["blur(6px)", "blur(0px)"] },
+  animate(heroCopy, { opacity: [0, 1], y: [24, 0] },
     { ...SPRING, delay: stagger(0.08, { startDelay: 0.15 }) }).then(() => settle(heroCopy));
   const heroVisual = $(".hero-visual");
   animate(heroVisual, { opacity: [0, 1] }, { duration: 0.8, delay: 0.3 });
@@ -374,7 +374,7 @@ if (useMotion) {
   document.querySelectorAll(".reveal").forEach((el) => {
     if (el.closest(".hero")) return;
     const delay = parseFloat(el.style.getPropertyValue("--d")) || 0;
-    const fromX = el.classList.contains("tl-item") ? (el.matches(":nth-child(even)") ? 48 : -48) : 0;
+    const fromX = el.classList.contains("tl-item") ? -24 : 0;
     inView(el, () => {
       animate(el, { opacity: [0, 1], x: [fromX, 0], y: [fromX ? 0 : 32, 0] }, { ...SPRING, delay }).then(() => settle(el));
       fillExtras(el);
@@ -440,101 +440,25 @@ const sectionObserver = new IntersectionObserver(
 );
 document.querySelectorAll("main section[id]").forEach((s) => sectionObserver.observe(s));
 
-/* ---------- Pointer effects: spotlight + 3D tilt ---------- */
+/* ---------- Pointer effect: 3D tilt on the photos ---------- */
 if (finePointer && !reduceMotion) {
-  const root = document.documentElement;
-  window.addEventListener("pointermove", (e) => {
-    root.style.setProperty("--mx", `${e.clientX}px`);
-    root.style.setProperty("--my", `${e.clientY}px`);
-  }, { passive: true });
-
-  document.querySelectorAll(".tilt, .project").forEach((card) => {
-    const max = card.classList.contains("project") ? 6 : 10;
+  document.querySelectorAll(".tilt").forEach((card) => {
     card.addEventListener("pointermove", (e) => {
       const r = card.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
       if (useMotion) {
-        M.animate(card, { rotateX: -y * max, rotateY: x * max, y: -6, transformPerspective: 900 }, { type: "spring", stiffness: 220, damping: 20 });
+        M.animate(card, { rotateX: -y * 8, rotateY: x * 8, transformPerspective: 900 }, { type: "spring", stiffness: 220, damping: 20 });
       } else {
-        card.style.transform = `perspective(900px) rotateX(${-y * max}deg) rotateY(${x * max}deg) translateY(-6px)`;
+        card.style.transform = `perspective(900px) rotateX(${-y * 8}deg) rotateY(${x * 8}deg)`;
       }
     });
     card.addEventListener("pointerleave", () => {
-      if (useMotion) M.animate(card, { rotateX: 0, rotateY: 0, y: 0 }, { type: "spring", stiffness: 160, damping: 18 });
+      if (useMotion) M.animate(card, { rotateX: 0, rotateY: 0 }, { type: "spring", stiffness: 160, damping: 18 });
       else card.style.transform = "";
     });
   });
-
-  // magnetic primary buttons: lean toward the cursor, spring back on leave
-  if (useMotion) {
-    document.querySelectorAll(".btn-primary").forEach((btn) => {
-      btn.addEventListener("pointermove", (e) => {
-        const r = btn.getBoundingClientRect();
-        const dx = e.clientX - (r.left + r.width / 2);
-        const dy = e.clientY - (r.top + r.height / 2);
-        M.animate(btn, { x: dx * 0.18, y: dy * 0.3 }, { type: "spring", stiffness: 260, damping: 18 });
-      });
-      btn.addEventListener("pointerleave", () => M.animate(btn, { x: 0, y: 0 }, { type: "spring", stiffness: 200, damping: 14 }));
-    });
-  }
 }
-
-/* ---------- Particle network background ---------- */
-(function particles() {
-  if (reduceMotion) return;
-  const canvas = $("#particles");
-  const ctx = canvas.getContext("2d");
-  let w, h, dots;
-
-  const resize = () => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = canvas.clientWidth;
-    h = canvas.clientHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.min(45, Math.floor((w * h) / 30000));
-    dots = Array.from({ length: count }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.18,
-      vy: (Math.random() - 0.5) * 0.18,
-      r: Math.random() * 1.6 + 0.4,
-    }));
-  };
-
-  const draw = () => {
-    ctx.clearRect(0, 0, w, h);
-    for (let i = 0; i < dots.length; i++) {
-      const a = dots[i];
-      a.x += a.vx; a.y += a.vy;
-      if (a.x < 0 || a.x > w) a.vx *= -1;
-      if (a.y < 0 || a.y > h) a.vy *= -1;
-      ctx.beginPath();
-      ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(180, 200, 255, 0.4)";
-      ctx.fill();
-      for (let j = i + 1; j < dots.length; j++) {
-        const b = dots[j];
-        const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 130) {
-          ctx.strokeStyle = `rgba(124, 92, 255, ${0.12 * (1 - d / 130)})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-      }
-    }
-    requestAnimationFrame(draw);
-  };
-
-  resize();
-  window.addEventListener("resize", resize);
-  draw();
-})();
 
 /* ---------- Toast ---------- */
 let toastTimer;

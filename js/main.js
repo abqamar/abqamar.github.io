@@ -2,12 +2,6 @@
    Muhammad Basit Qamar — Portfolio
    ========================================================== */
 
-const ROLES = [
-  "Senior Flutter Developer",
-  "Senior Android Developer",
-  "Java | Kotlin | NodeJS | Python | Dart Frog",
-];
-
 const SKILLS = [
   { name: "Dart", level: 95, icon: "fa-solid fa-code" },
   { name: "Java", level: 85, icon: "fa-brands fa-java" },
@@ -206,49 +200,49 @@ const DEV_TOOLS = [
 const WEB3FORMS_KEY = "6e02536d-546e-4f55-b7f5-3f564f7971be";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const finePointer = window.matchMedia("(pointer: fine)").matches;
 const $ = (sel) => document.querySelector(sel);
 
 /* ---------- Render sections ---------- */
 $("#skills").innerHTML = SKILLS.map(
   (s) => `
-  <div class="skill">
+  <li class="skill">
     <div class="skill-top"><span><i aria-hidden="true" class="${s.icon}"></i>${s.name}</span><span>${s.level}%</span></div>
-    <div class="bar"><div class="bar-fill" data-level="${s.level}"></div></div>
-  </div>`
+    <div class="bar" role="presentation"><div class="bar-fill" style="--level:${s.level / 100}"></div></div>
+  </li>`
 ).join("");
 
 $("#timeline").innerHTML = EXPERIENCE.map(
   (e) => `
-  <div class="tl-item reveal">
-    <span class="tl-dot"></span>
-    <div class="glass card tl-card">
-      <span class="tl-date"><i aria-hidden="true" class="fa-regular fa-calendar"></i>${e.date}</span>
+  <li class="tl-item">
+    <div>
+      <p class="tl-date">${e.date}</p>
+      <p class="tl-loc">${e.location}</p>
+    </div>
+    <div>
       <h3 class="tl-role">${e.role}</h3>
-      <p class="tl-company">${e.company}${e.outsourced ? ` <em>· Outsourced: ${e.outsourced}</em>` : ""}</p>
-      <p class="tl-loc"><i aria-hidden="true" class="fa-solid fa-location-dot"></i>${e.location}</p>
+      <p class="tl-company">${e.company}${e.outsourced ? ` <em>· for ${e.outsourced}</em>` : ""}</p>
       <p class="tl-desc">${e.desc}</p>
     </div>
-  </div>`
+  </li>`
 ).join("");
 
-const link = (href, icon, label) =>
-  href ? `<a href="${href}" target="_blank" rel="noopener" aria-label="${label}" title="${label}"><i aria-hidden="true" class="${icon}"></i></a>` : "";
+const link = (href, icon, label, title) =>
+  href ? `<a href="${href}" target="_blank" rel="noopener" aria-label="${title} on ${label}" title="${label}"><i aria-hidden="true" class="${icon}"></i></a>` : "";
 
 $("#projectsGrid").innerHTML = PROJECTS.map(
-  (p, i) => `
-  <article class="project glass reveal" style="--d:${(i % 3) * 0.1}s">
+  (p) => `
+  <article class="project">
     <div class="project-media">
       <span class="project-tag">${p.tag}</span>
-      <img src="${p.image}" alt="${p.title}" loading="lazy">
+      <img src="${p.image}" alt="${p.title} app" loading="lazy" decoding="async">
     </div>
     <div class="project-body">
       <h3>${p.title}</h3>
       <p>${p.desc}</p>
       <div class="project-links">
-        ${link(p.appStore, "fa-brands fa-app-store-ios", "App Store")}
-        ${link(p.playStore, "fa-brands fa-google-play", "Google Play")}
-        ${link(p.web, "fa-solid fa-globe", "Website")}
+        ${link(p.appStore, "fa-brands fa-app-store-ios", "App Store", p.title)}
+        ${link(p.playStore, "fa-brands fa-google-play", "Google Play", p.title)}
+        ${link(p.web, "fa-solid fa-globe", "the web", p.title)}
       </div>
     </div>
   </article>`
@@ -258,8 +252,8 @@ const toolIcon = (d) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
 
 $("#toolsFeatured").innerHTML = DEV_TOOLS.filter((t) => t.category === "flutter").map(
-  (t, i) => `
-  <a class="tool-feature glass reveal" style="--d:${i * 0.1}s" href="${t.url}" target="_blank" rel="noopener">
+  (t) => `
+  <a class="tool-feature" href="${t.url}" target="_blank" rel="noopener">
     <span class="tool-icon">${toolIcon(t.icon)}</span>
     <span class="tool-text">
       <strong>${t.name}</strong>
@@ -270,13 +264,17 @@ $("#toolsFeatured").innerHTML = DEV_TOOLS.filter((t) => t.category === "flutter"
 ).join("");
 
 $("#toolsGrid").innerHTML = DEV_TOOLS.filter((t) => t.category !== "flutter").map(
-  (t, i) => `
-  <a class="tool-tile glass reveal" style="--d:${(i % 5) * 0.08}s" data-category="${t.category}" href="${t.url}" target="_blank" rel="noopener">
+  (t) => `
+  <a class="tool-tile" data-category="${t.category}" href="${t.url}" target="_blank" rel="noopener">
     <span class="tool-icon">${toolIcon(t.icon)}</span>
     <strong>${t.name}</strong>
     <small>${t.desc}</small>
   </a>`
 ).join("");
+
+const M = window.Motion;
+const useMotion = !!M && !reduceMotion;
+const EASE = [0.32, 0.72, 0, 1];
 
 document.querySelectorAll(".tool-filter").forEach((btn) =>
   btn.addEventListener("click", () => {
@@ -285,180 +283,122 @@ document.querySelectorAll(".tool-filter").forEach((btn) =>
     document.querySelectorAll(".tool-tile").forEach((tile) => {
       tile.hidden = cat !== "all" && tile.dataset.category !== cat;
     });
-    const shown = [...document.querySelectorAll(".tool-tile:not([hidden])")];
-    if (window.Motion && !reduceMotion) {
-      Motion.animate(shown, { opacity: [0, 1], scale: [0.92, 1] }, { type: "spring", stiffness: 300, damping: 24, delay: Motion.stagger(0.04) })
-        .then(() => shown.forEach((t) => (t.style.transform = "")));
-    }
+    // crossfade the filtered result in place
+    if (useMotion) M.animate("#toolsGrid", { opacity: [0, 1] }, { duration: 0.25, ease: EASE });
   })
 );
 
-/* ---------- Typewriter ---------- */
-(function typewriter() {
-  const el = $("#typed");
-  if (reduceMotion) { el.textContent = ROLES[0]; return; }
-  let r = 0, c = 0, deleting = false;
-  (function tick() {
-    const word = ROLES[r];
-    el.textContent = word.slice(0, c);
-    if (!deleting && c === word.length) { deleting = true; return setTimeout(tick, 1800); }
-    if (deleting && c === 0) { deleting = false; r = (r + 1) % ROLES.length; }
-    c += deleting ? -1 : 1;
-    setTimeout(tick, deleting ? 35 : 75);
-  })();
-})();
-
-/* ---------- Reveal on scroll + skill bars + counters ---------- */
-const countUp = (el) => {
-  const target = +el.dataset.count;
-  const start = performance.now();
-  const dur = 1400;
-  (function step(now) {
-    const t = Math.min((now - start) / dur, 1);
-    el.textContent = Math.round(target * (1 - Math.pow(1 - t, 3)));
-    if (t < 1) requestAnimationFrame(step);
-  })(start);
-};
-
-// Motion (motion.dev) drives the animations; without it (CDN blocked or reduced
-// motion requested) the CSS transitions below take over, so content never stays hidden.
-const M = window.Motion;
-const useMotion = !!M && !reduceMotion;
-const EASE = [0.22, 1, 0.36, 1];
-const SPRING = { type: "spring", stiffness: 140, damping: 22, mass: 0.9 };
-
-function fillExtras(el) {
-  el.querySelectorAll(".bar-fill").forEach((b) => {
-    if (useMotion) M.animate(b, { width: ["0%", b.dataset.level + "%"] }, { duration: 1.4, ease: EASE });
-    else b.style.width = b.dataset.level + "%";
-  });
-  el.querySelectorAll("[data-count]").forEach((c) => {
-    if (useMotion) M.animate(0, +c.dataset.count, { duration: 1.6, ease: EASE, onUpdate: (v) => (c.textContent = Math.round(v)) });
-    else countUp(c);
-  });
-}
-
+/* ---------- Motion: entrances ----------
+   Springs, not fixed-duration easing: critically damped (no bounce) because nothing here
+   carries gesture momentum. Hero animates on mount; every other group reveals once at 15% visibility.
+   [data-reveal] = copy / mixed / card groups, [data-reveal-media] = standalone media,
+   [data-stagger] = 2–4 sibling cards revealed 0.08s apart (no stagger on phones).
+   Without Motion (CDN blocked or reduced motion) nothing is hidden. */
 if (useMotion) {
-  const { animate, inView, scroll, stagger } = M;
-  document.documentElement.classList.add("has-motion");
+  const { animate, inView } = M;
+  const phone = matchMedia("(max-width: 640px)").matches;
+  const TRAVEL = phone ? 16 : 28;
+  const SPRING = { type: "spring", bounce: 0, duration: 0.8 };
 
-  // hand control back to CSS (hover lifts etc.) once an entrance finishes
-  const settle = (els) => [].concat(els).forEach((el) => {
-    el.classList.add("revealed");
-    el.style.transform = "";
-    el.style.filter = "";
-  });
+  animate("[data-hero]", { opacity: [0, 1], y: [TRAVEL, 0] }, SPRING);
+  animate("[data-hero-media]", { opacity: [0, 1], y: [TRAVEL * 2, 0] }, { ...SPRING, delay: 0.12 });
 
-  // Page load: hero copy rises line by line
-  const heroCopy = [...document.querySelectorAll(".hero-text .reveal")];
-  animate(heroCopy, { opacity: [0, 1], y: [24, 0] },
-    { ...SPRING, delay: stagger(0.08, { startDelay: 0.15 }) }).then(() => settle(heroCopy));
-  const heroVisual = $(".hero-visual");
-  animate(heroVisual, { opacity: [0, 1] }, { duration: 0.8, delay: 0.3 });
-  animate(".phone", { scale: [0.88, 1] }, { type: "spring", stiffness: 90, damping: 16, delay: 0.3 });
-  animate(".chip", { opacity: [0, 1], filter: ["blur(4px)", "blur(0px)"] }, { duration: 0.5, delay: stagger(0.12, { startDelay: 0.8 }) });
-
-  // Scroll-linked: gentle hero parallax as it leaves the viewport
-  const hero = $(".hero");
-  scroll(animate(heroVisual, { y: [0, 90] }, { ease: "linear" }), { target: hero, offset: ["start start", "end start"] });
-  scroll(animate(".hero-text", { y: [0, 40], opacity: [1, 0.25] }, { ease: "linear" }), { target: hero, offset: ["start start", "end start"] });
-
-  // Timeline line draws itself as you read down the experience
-  const timeline = $("#timeline");
-  const line = document.createElement("span");
-  line.className = "timeline-progress";
-  timeline.prepend(line);
-  scroll(animate(line, { scaleY: [0, 1] }, { ease: "linear" }), { target: timeline, offset: ["start 75%", "end 60%"] });
-
-  // Everything below the hero springs in as it enters; items in a row keep their stagger (--d)
-  document.querySelectorAll(".reveal").forEach((el) => {
-    if (el.closest(".hero")) return;
-    const delay = parseFloat(el.style.getPropertyValue("--d")) || 0;
-    const fromX = el.classList.contains("tl-item") ? -24 : 0;
+  const reveal = (el, keyframes, delay = 0) => {
+    el.style.opacity = "0";
+    // tall groups trigger as soon as they appear
+    const amount = el.offsetHeight > innerHeight ? 0 : 0.15;
     inView(el, () => {
-      animate(el, { opacity: [0, 1], x: [fromX, 0], y: [fromX ? 0 : 32, 0] }, { ...SPRING, delay }).then(() => settle(el));
-      fillExtras(el);
-    }, { margin: "0px 0px -60px 0px" });
-  });
-} else {
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("visible");
-        fillExtras(entry.target);
-        io.unobserve(entry.target);
-      });
-    },
-    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
-  );
-  document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+      animate(el, keyframes, { ...SPRING, delay }).then(() => (el.style.transform = ""));
+    }, { amount });
+  };
 
-  // stagger hero entrance
-  document.querySelectorAll(".hero .reveal").forEach((el, i) => el.style.setProperty("--d", `${i * 0.1}s`));
+  document.querySelectorAll("[data-reveal]").forEach((el) => reveal(el, { opacity: [0, 1], y: [TRAVEL, 0] }));
+  document.querySelectorAll("[data-reveal-media]").forEach((el) => reveal(el, { opacity: [0, 1], scale: [0.97, 1] }));
+  document.querySelectorAll("[data-stagger]").forEach((group) => {
+    const items = [...group.children];
+    items.forEach((el) => (el.style.opacity = "0"));
+    inView(group, () => {
+      items.forEach((el, i) =>
+        animate(el, { opacity: [0, 1], y: [TRAVEL, 0] }, { ...SPRING, delay: phone ? 0 : i * 0.08 })
+          .then(() => (el.style.transform = ""))
+      );
+    }, { amount: 0.15 });
+  });
+
+  // The experience timeline is a progression of roles — reveal in reading order
+  document.querySelectorAll(".tl-item").forEach((el) => reveal(el, { opacity: [0, 1], y: [TRAVEL, 0] }));
+
+  // Stat counters tick up with their tiles
+  inView(".stats", () => {
+    document.querySelectorAll("[data-count]").forEach((c) =>
+      animate(0, +c.dataset.count, { ...SPRING, duration: 1.2, onUpdate: (v) => (c.textContent = Math.round(v)) })
+    );
+  }, { amount: 0.15 });
+
+  // Skill bars grow (transform only) when the skills tile appears
+  inView(".tile-skills", () => {
+    document.querySelectorAll(".bar-fill").forEach((b) =>
+      animate(b, { scaleX: [0, +b.style.getPropertyValue("--level")] }, { ...SPRING, duration: 1 })
+    );
+  }, { amount: 0.15 });
 }
+
+/* ---------- Projects carousel ----------
+   Native scroll-snap keeps momentum and rubber-banding; buttons just move one card. */
+const strip = $("#projectsGrid");
+const prevBtn = $("#projPrev");
+const nextBtn = $("#projNext");
+const step = () => strip.querySelector(".project").offsetWidth + parseFloat(getComputedStyle(strip).columnGap);
+const syncCarousel = () => {
+  prevBtn.disabled = strip.scrollLeft < 8;
+  nextBtn.disabled = strip.scrollLeft > strip.scrollWidth - strip.clientWidth - 8;
+};
+prevBtn.addEventListener("click", () => strip.scrollBy({ left: -step(), behavior: reduceMotion ? "auto" : "smooth" }));
+nextBtn.addEventListener("click", () => strip.scrollBy({ left: step(), behavior: reduceMotion ? "auto" : "smooth" }));
+strip.addEventListener("scroll", syncCarousel, { passive: true });
+window.addEventListener("resize", syncCarousel);
+syncCarousel();
 
 /* ---------- Navigation ---------- */
 const navWrap = $(".nav-wrap");
 const navLinks = $("#navLinks");
 const menuToggle = $("#menuToggle");
 
-const progress = $("#scrollProgress");
 let scrollTicking = false;
 window.addEventListener("scroll", () => {
   if (scrollTicking) return;
   scrollTicking = true;
   requestAnimationFrame(() => {
-    const max = document.documentElement.scrollHeight - innerHeight;
-    progress.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
-    navWrap.classList.toggle("scrolled", scrollY > 20);
+    navWrap.classList.toggle("scrolled", scrollY > 8);
     scrollTicking = false;
   });
 }, { passive: true });
 
-menuToggle.addEventListener("click", () => {
-  const open = navLinks.classList.toggle("open");
+const setMenu = (open) => {
+  navLinks.classList.toggle("open", open);
   menuToggle.setAttribute("aria-expanded", open);
+  menuToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+};
+menuToggle.addEventListener("click", () => setMenu(!navLinks.classList.contains("open")));
+navLinks.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setMenu(false)));
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && navLinks.classList.contains("open")) { setMenu(false); menuToggle.focus(); }
 });
-navLinks.querySelectorAll("a").forEach((a) =>
-  a.addEventListener("click", () => {
-    navLinks.classList.remove("open");
-    menuToggle.setAttribute("aria-expanded", "false");
-  })
-);
 
 const sectionObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
-      navLinks.querySelectorAll("a").forEach((a) =>
-        a.classList.toggle("active", a.getAttribute("href") === `#${entry.target.id}`)
-      );
+      navLinks.querySelectorAll("a").forEach((a) => {
+        const on = a.getAttribute("href") === `#${entry.target.id}`;
+        a.classList.toggle("active", on);
+        on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current");
+      });
     });
   },
   { rootMargin: "-45% 0px -50% 0px" }
 );
 document.querySelectorAll("main section[id]").forEach((s) => sectionObserver.observe(s));
-
-/* ---------- Pointer effect: 3D tilt on the photos ---------- */
-if (finePointer && !reduceMotion) {
-  document.querySelectorAll(".tilt").forEach((card) => {
-    card.addEventListener("pointermove", (e) => {
-      const r = card.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      if (useMotion) {
-        M.animate(card, { rotateX: -y * 8, rotateY: x * 8, transformPerspective: 900 }, { type: "spring", stiffness: 220, damping: 20 });
-      } else {
-        card.style.transform = `perspective(900px) rotateX(${-y * 8}deg) rotateY(${x * 8}deg)`;
-      }
-    });
-    card.addEventListener("pointerleave", () => {
-      if (useMotion) M.animate(card, { rotateX: 0, rotateY: 0 }, { type: "spring", stiffness: 160, damping: 18 });
-      else card.style.transform = "";
-    });
-  });
-}
 
 /* ---------- Toast ---------- */
 let toastTimer;

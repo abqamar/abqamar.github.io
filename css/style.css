@@ -164,7 +164,9 @@ p { text-wrap: pretty; }
 }
 .nav-wrap.scrolled { border-bottom-color: var(--line); }
 .nav { position: relative; width: min(1080px, 100% - 2 * var(--sp-3)); height: var(--nav-h); margin-inline: auto; display: flex; align-items: center; gap: var(--sp-3); }
-.logo { font-size: var(--fs-21); font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font-size: var(--fs-21); font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
+.logo img { width: 40px; height: 40px; margin: -4px -2px -4px -6px; }
+.logo b { font-weight: inherit; }
 .logo span { color: var(--dim); font-weight: 500; }
 .nav-links { display: flex; gap: 4px; margin-left: auto; }
 .nav-links a {
@@ -383,7 +385,11 @@ p { text-wrap: pretty; }
 
 /* ---------- Footer ---------- */
 .footer { background: var(--bg-alt); border-top: 1px solid var(--line); padding-block: var(--sp-4); color: var(--dim); font-size: var(--fs-12); letter-spacing: 0; }
-.footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sp-2); }
+.footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--sp-2); }
+/* the wordmark has white text, so it always sits on its own dark tile */
+.footer-brand { display: grid; place-items: center; padding: 6px; border-radius: 22px; background: #000; box-shadow: 0 0 0 1px var(--line); transition: transform var(--dur-press) ease-out; }
+.footer-brand img { width: 88px; height: 88px; }
+.footer-brand:active { transform: scale(0.97); }
 .footer-links { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
 .footer-links a:hover { color: var(--text); }
 
